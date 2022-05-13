@@ -1,8 +1,10 @@
 import koa from 'koa'
 import {extname,resolve} from 'path'
 import {createReadStream} from 'fs'
+import range from 'koa-range'
 const app = new koa()
 
+app.use(range);
 app.use(({request,response},next) => {
     if(
         !request.url.startsWith('/api/video') ||
@@ -13,13 +15,13 @@ app.use(({request,response},next) => {
         return next();   
     }
     const video = resolve('videos',request.query.video);
-    const range = request.header;
+    let range = request.header.range;
     if(!range){
+        range = 'bytes=0-'
         response.type = extname(video);
         response.body = createReadStream(video)
         return next();
     }
-    console.log(range)
     
     
 })

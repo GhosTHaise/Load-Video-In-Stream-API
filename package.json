@@ -7,6 +7,10 @@
   "dependencies": {
     "@types/koa": "^2.13.4",
     "koa": "^2.13.4",
+    "koa-range": "^0.3.0",
     "nodemon": "^2.0.16"
+  },
+  "devDependencies": {
+    "@types/koa-range": "^0.3.2"
   }
 }
