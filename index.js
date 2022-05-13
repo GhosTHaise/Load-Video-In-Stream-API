@@ -12,15 +12,16 @@ app.use(({request,response},next) => {
         console.log("not execute");
         return next();   
     }
+    const video = resolve('videos',request.query.video);
     const range = request.header;
     if(!range){
-        
+        response.type = extname(video);
+        response.body = createReadStream(video)
+        return next();
     }
     console.log(range)
-    const video = resolve('videos',request.query.video);
-    response.type = extname(video);
-    response.body = createReadStream(video)
-    return next();
+    
+    
 })
 
 app.listen(3000,() =>{
