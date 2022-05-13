@@ -1,11 +1,12 @@
 import koa from 'koa'
 import {extname,resolve} from 'path'
-import {createReadStream} from 'fs'
+import {createReadStream,stat} from 'fs'
 import range from 'koa-range'
+import { promisify } from 'util'
 const app = new koa()
 
 app.use(range);
-app.use(({request,response},next) => {
+app.use(async({request,response},next) => {
     if(
         !request.url.startsWith('/api/video') ||
         !request.query.video ||
@@ -18,11 +19,20 @@ app.use(({request,response},next) => {
     let range = request.header.range;
     if(!range){
         range = 'bytes=0-'
-        response.type = extname(video);
+       /*  response.type = extname(video);
         response.body = createReadStream(video)
-        return next();
+        console.log('nande')
+        return next(); */
     }
-    
+    const parts = range.replace('bytes=','').split('-')
+    const start = parseInt(parts[0],10);
+    const videoStat = await promisify(stat)(video);
+    const end = (parts[1]) ? parseInt(parts[1],10) : videoStat.size -1;
+    response.set(`Content-Range`,`bytes ${start}-${end}/${videoStat.size}`);
+    response.set('Accept-Ranges','bytes');
+    response.status = 206;
+    response.body = createReadStream(video,{start,end})
+
     
 })
 
