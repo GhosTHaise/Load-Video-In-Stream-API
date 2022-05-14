@@ -1,12 +1,11 @@
 import koa from 'koa'
 import {extname,resolve} from 'path'
 import {createReadStream,stat} from 'fs'
-import range from 'koa-range'
 import { promisify } from 'util'
 const app = new koa()
 
-app.use(range);
 app.use(async({request,response},next) => {
+    response.set(`Range`,`bytes=0- `)
     if(
         !request.url.startsWith('/api/video') ||
         !request.query.video ||
@@ -29,11 +28,16 @@ app.use(async({request,response},next) => {
     const videoStat = await promisify(stat)(video);
     const end = (parts[1]) ? parseInt(parts[1],10) : videoStat.size -1;
     response.set(`Content-Range`,`bytes ${start}-${end}/${videoStat.size}`);
-    response.set('Accept-Ranges','bytes');
+    response.set('Accept-Ranges',`bytes`);
+    response.set(`Content-Length`, end - start +1);
     response.status = 206;
     response.body = createReadStream(video,{start,end})
-
+    return next()
     
+})
+
+app.on('error',(error,ctx)=>{
+
 })
 
 app.listen(3000,() =>{
