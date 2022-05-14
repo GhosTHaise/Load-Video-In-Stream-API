@@ -2,8 +2,10 @@ import koa from 'koa'
 import {extname,resolve} from 'path'
 import {createReadStream,stat} from 'fs'
 import { promisify } from 'util'
+import jwt from 'koa-jwt'
 const app = new koa()
 
+app.use(jwt({secret : 'secret',algorithms : ['HS256','HS512']}))
 app.use(async({request,response},next) => {
     response.set(`Range`,`bytes=0- `)
     if(
